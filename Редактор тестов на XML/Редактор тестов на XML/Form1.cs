@@ -19,6 +19,10 @@ namespace Редактор_тестов_на_XML
             InitializeComponent();
         }
 
+        string FilePath;
+        Boolean FileOpened = false;
+        Boolean FileRedacted = false;
+
         [Serializable]
         public class Tests
         {
@@ -56,7 +60,7 @@ namespace Редактор_тестов_на_XML
         {
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
                 return;
-            string FilePath = openFileDialog1.FileName;
+            FilePath = openFileDialog1.FileName;
 
             dataGridView1.Rows.Clear();
 
@@ -75,7 +79,9 @@ namespace Редактор_тестов_на_XML
                 }
             }
 
-
+            FileOpened = true;
+            FileRedacted = false;
+            сохранитьToolStripMenuItem1.Enabled = false;
 
         }
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -103,6 +109,7 @@ namespace Редактор_тестов_на_XML
             column3.HeaderText = "Name";
             column3.Name = "Name";
             column3.Width = 200;
+            column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
             column3.CellTemplate = new DataGridViewTextBoxCell();
 
             var column4 = new DataGridViewColumn();
@@ -122,11 +129,11 @@ namespace Редактор_тестов_на_XML
             column6.Name = "Output";
             column6.CellTemplate = new DataGridViewTextBoxCell();
 
-            var column7 = new DataGridViewColumn();
+            var column7 = new DataGridViewCheckBoxColumn();
             column7.HeaderText = "CanBeSkipped";
             column7.Name = "CanBeSkipped";
             column7.Width = 110;
-            column7.CellTemplate = new DataGridViewTextBoxCell();
+            column7.CellTemplate = new DataGridViewCheckBoxCell();
 
             dataGridView1.Columns.Add(column1);
             dataGridView1.Columns.Add(column2);
@@ -148,32 +155,97 @@ namespace Редактор_тестов_на_XML
             xRoot.ElementName = "Tests";
             xRoot.Namespace = null;
             xRoot.IsNullable = true;
+
+            dataGridView1.CurrentCell = null;//Изменяем CurrentCell
+
             XmlSerializer formatter = new XmlSerializer(typeof(Tests.Test[]), xRoot);
 
             if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
                 return;
 
-            string FilePath = saveFileDialog1.FileName;
+            FilePath = saveFileDialog1.FileName;
 
+            if (System.IO.File.Exists(@FilePath))
+            {
+                try
+                {
+                    System.IO.File.Delete(@FilePath);
+                }
+                catch
+                {
+                    MessageBox.Show("Файл не был сохранен, файл занят другим процессом.");
+                }
 
-            
+            }
+
             using (FileStream fs = new FileStream(@FilePath, FileMode.OpenOrCreate))
             {
 
-                Tests.Test[] Tests1 = new Tests.Test[] { };
-                for (int i = 1; i < dataGridView1.Rows.Count; i++)
+                Tests.Test[] Tests1 = new Tests.Test[dataGridView1.Rows.Count - 1];
+                for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
                 {
-                    Tests1[i - 1].TestId = Convert.ToString(dataGridView1[1, i].Value);
-                    //Tests1[i].TestType = Convert.ToString(dataGridView1["TestType", i].Value);
-                    //Tests1[i].Name = Convert.ToString(dataGridView1["Name", i].Value);
-                    //Tests1[i].CommandLine = Convert.ToString(dataGridView1["CommandLine", i].Value);
-                    //Tests1[i].Input = Convert.ToString(dataGridView1["Input", i].Value);
-                    //Tests1[i].Output = Convert.ToString(dataGridView1["Output", i].Value);
-                    //Tests1[i].CanBeSkipped = Convert.ToBoolean(dataGridView1["CanBeSkipped", i].Value);
+                    Tests1[i] = new Tests.Test(
+                                                   Convert.ToString(dataGridView1["TestId", i].Value),
+                                                   Convert.ToString(dataGridView1["TestType", i].Value),
+                                                   Convert.ToString(dataGridView1["Name", i].Value),
+                                                   Convert.ToString(dataGridView1["CommandLine", i].Value),
+                                                   Convert.ToString(dataGridView1["Input", i].Value),
+                                                   Convert.ToString(dataGridView1["Output", i].Value),
+                                                   Convert.ToBoolean(dataGridView1["CanBeSkipped", i].Value)
+                                              );
+                };
+
+                formatter.Serialize(fs, Tests1);
+            }   
+        }
+
+        private void сохранитьToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            XmlRootAttribute xRoot = new XmlRootAttribute();
+            xRoot.ElementName = "Tests";
+            xRoot.Namespace = null;
+            xRoot.IsNullable = true;
+            XmlSerializer formatter = new XmlSerializer(typeof(Tests.Test[]), xRoot);
+            dataGridView1.CurrentCell = null;//Изменяем CurrentCell
+            if (System.IO.File.Exists(@FilePath))
+            {
+                try
+                {
+                    System.IO.File.Delete(@FilePath);
                 }
-                //formatter.Serialize(fs, Tests1);
+                catch
+                {
+                    MessageBox.Show("Файл не был сохранен, файл занят другим процессом.");
+                }
+
             }
-            
+
+            using (FileStream fs = new FileStream(@FilePath, FileMode.OpenOrCreate))
+            {
+
+                Tests.Test[] Tests1 = new Tests.Test[dataGridView1.Rows.Count - 1];
+                for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+                {
+                    Tests1[i] = new Tests.Test(
+                                                   Convert.ToString(dataGridView1["TestId", i].Value),
+                                                   Convert.ToString(dataGridView1["TestType", i].Value),
+                                                   Convert.ToString(dataGridView1["Name", i].Value),
+                                                   Convert.ToString(dataGridView1["CommandLine", i].Value),
+                                                   Convert.ToString(dataGridView1["Input", i].Value),
+                                                   Convert.ToString(dataGridView1["Output", i].Value),
+                                                   Convert.ToBoolean(dataGridView1["CanBeSkipped", i].Value)
+                                              );
+                };
+
+                formatter.Serialize(fs, Tests1);
+            }
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (FileOpened == true)
+                FileRedacted = true;
+            сохранитьToolStripMenuItem1.Enabled = true;
         }
     }
 }   

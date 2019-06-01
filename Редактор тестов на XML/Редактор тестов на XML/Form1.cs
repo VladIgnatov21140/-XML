@@ -265,9 +265,12 @@ namespace Редактор_тестов_на_XML
                     dataGridView1.Rows.Clear();
                     NewTests.RemoveAt(SelectedRowIndex);
                     dataGridView1.DataSource = DataBinding;
+
+                    FileRedacted = true;
+                    сохранитьToolStripMenuItem1.Enabled = true;
                 }
 
-            FileRedacted = true;
+            
         }
 
         private void удалитьСтрокуToolStripMenuItem_Click(object sender, EventArgs e)
@@ -279,7 +282,9 @@ namespace Редактор_тестов_на_XML
                 dataGridView1.Rows.Clear();
                 NewTests.RemoveAt(SelectedRowIndex);
                 dataGridView1.DataSource = DataBinding;
+
                 FileRedacted = true;
+                сохранитьToolStripMenuItem1.Enabled = true;
             } catch
                 {
                     dataGridView1.DataSource = DataBinding;

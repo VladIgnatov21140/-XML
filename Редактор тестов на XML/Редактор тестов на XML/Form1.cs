@@ -27,20 +27,23 @@ namespace Редактор_тестов_на_XML
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            switch (MessageBox.Show("Таблица была изменена.\n Сохранить ее?",
-                        "Редактор тестов на XML",
-                        MessageBoxButtons.YesNoCancel,
-                        MessageBoxIcon.Question))
+            if (FileRedacted == true)
             {
-                case DialogResult.Yes:
-                    if (FilePath == "")
-                        сохранитьToolStripMenuItem_Click(sender, e);
-                    else
-                        сохранитьToolStripMenuItem1_Click(sender, e);
-                    return;
+                switch (MessageBox.Show("Таблица была изменена.\n Сохранить ее?",
+                            "Редактор тестов на XML",
+                            MessageBoxButtons.YesNoCancel,
+                            MessageBoxIcon.Question))
+                {
+                    case DialogResult.Yes:
+                        if (FilePath == "")
+                            сохранитьToolStripMenuItem_Click(sender, e);
+                        else
+                            сохранитьToolStripMenuItem1_Click(sender, e);
+                        return;
 
-                case DialogResult.Cancel:
-                    return;
+                    case DialogResult.Cancel:
+                        return;
+                }
             }
 
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)

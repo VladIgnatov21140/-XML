@@ -254,12 +254,13 @@ namespace Редактор_тестов_на_XML
             } else
                 {
                     Int32 SelectedRowIndex = dataGridView1.CurrentRow.Index;
-                    //dataGridView1.CurrentCell = null;//Снятие выделений с таблицы
+                //dataGridView1.CurrentCell = null;//Снятие выделений с таблицы
+                    dataGridView1.SuspendLayout();
                     dataGridView1.DataSource = null;
                     NewTests.Insert(SelectedRowIndex, new Test("", "", "", "", "", "", false));
                     NewTests.Insert(SelectedRowIndex, new Test("", "", "", "", "", "", false));
                     dataGridView1.DataSource = NewTests;
-                    dataGridView1.Update();
+                    dataGridView1.ResumeLayout();
 
                     dataGridView1.DataSource = null;
                     dataGridView1.Rows.Clear();
